@@ -1,0 +1,17 @@
+name: Tests
+
+on: [push]
+
+jobs:
+  integrationtest:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - run: |
+        sudo apt-get update
+        sudo apt-get install gfortran libopenblas-dev liblapack-dev
+        sudo apt install python3 python3-pip python3-numpy python3-scipy
+    - run: |
+        sudo python3 -m pip install -r requirements_ci.txt
+    - run: |
+        pwd
