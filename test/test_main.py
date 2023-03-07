@@ -17,7 +17,34 @@ class TestHuffmanEncoder(TestCase):
         self.assertEqual(heapq.heappop(encoder.heap), HuffmanNode('A', 5))
 
     def test_build_tree(self):
-        pass
+        string = 'ABRAKADABRA'
+        encoder = HuffmanEncoder(string, 1, None)
+        encoder.analyze_string()
+        encoder.build_tree()
+        self.assertEqual(
+            encoder.tree,
+            HuffmanNode(
+                None,
+                11,
+                HuffmanNode('A', 5, None, None,),
+                HuffmanNode(
+                    None,
+                    6,
+                    HuffmanNode(
+                        None,
+                        2,
+                        HuffmanNode('K', 1, None, None),
+                        HuffmanNode('D', 1, None, None),
+                    ),
+                    HuffmanNode(
+                        None,
+                        4,
+                        HuffmanNode('R', 2, None, None),
+                        HuffmanNode('B', 2, None, None),
+                    ),
+                ),
+            )
+        )
 
     def test_build_codes(self):
         pass

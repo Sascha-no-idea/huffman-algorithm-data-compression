@@ -30,13 +30,14 @@ class HuffmanTree:
 
     def build_tree(self):
         while len(self.heap) > 1:
-            node1 = heapq.heappop(self.heap)
-            node2 = heapq.heappop(self.heap)
-            node3 = HuffmanNode(None, node1.freq + node2.freq)
-            node3.left = node1
-            node3.right = node2
-            heapq.heappush(self.heap, node3)
-        return self.heap[0]
+            left = heapq.heappop(self.heap)
+            right = heapq.heappop(self.heap)
+            new = HuffmanNode(None, left.freq + right.freq)
+            # None instead of char because this is not a leaf node
+            new.left = left
+            new.right = right
+            heapq.heappush(self.heap, new)
+        return self.heap[0]  # return the root node, which is the only node left in the heap
 
 
 class HuffmanNode:
@@ -45,7 +46,7 @@ class HuffmanNode:
     a character, a frequency, and a pointer to the left and
     and right child nodes.
     """
-    def __init__(self, char, freq):
+    def __init__(self, char, freq, left=None, right=None):
         self.char = char
         self.freq = freq
         self.left = None
@@ -92,13 +93,13 @@ class HuffmanEncoder:
         for key, value in d.items():
             node = HuffmanNode(key, value)
             heapq.heappush(self.heap, node)
-        return self.heap
 
     def build_tree(self):
         """
-        This function builds the Huffman tree.
+        This function builds the Huffman tree using the priority queue.
         """
-        pass
+        tree = HuffmanTree(self.heap)
+        self.tree = tree.build_tree()
 
     def build_codes(self):
         """
@@ -119,7 +120,8 @@ class HuffmanEncoder:
         This function analyzes the string, builds the tree,
         builds the codes, and encodes the string.
         """
-        pass
+        self.analyze_string()
+        self.build_tree()
 
 
 class HuffmanDecoder:
