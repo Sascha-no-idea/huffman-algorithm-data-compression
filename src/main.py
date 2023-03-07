@@ -14,32 +14,6 @@ import heapq
 import collections
 
 
-class HuffmanTree:
-    """
-    This class represents a binary tree that is used to encode
-    and decode messages using the Huffman algorithm. The tree
-    is constructed using a priority queue that is populated with
-    the characters in the message and their frequencies. The
-    tree is constructed by combining the two nodes with the
-    highest priority (lowest frequency) until only one node
-    is left. The Huffman tree is a binary tree where the
-    nodes are HuffmanNodes.
-    """
-    def __init__(self, heap):
-        self.heap = heap
-
-    def build_tree(self):
-        while len(self.heap) > 1:
-            left = heapq.heappop(self.heap)
-            right = heapq.heappop(self.heap)
-            new = HuffmanNode(None, left.freq + right.freq)
-            # None instead of char because this is not a leaf node
-            new.left = left
-            new.right = right
-            heapq.heappush(self.heap, new)
-        return self.heap[0]  # return the root node, which is the only node left in the heap
-
-
 class HuffmanNode:
     """
     This class represents a node in the Huffman tree. It has
@@ -98,8 +72,17 @@ class HuffmanEncoder:
         """
         This function builds the Huffman tree using the priority queue.
         """
-        tree = HuffmanTree(self.heap)
-        self.tree = tree.build_tree()
+        while len(self.heap) > 1:
+            left = heapq.heappop(self.heap)
+            right = heapq.heappop(self.heap)
+            new = HuffmanNode(None, left.freq + right.freq)
+            # None instead of char because this is not a leaf node
+            new.left = left
+            new.right = right
+            heapq.heappush(self.heap, new)
+
+        # return the root node, which is the only node left in the heap
+        self.tree = self.heap[0]
 
     def build_codes(self):
         """

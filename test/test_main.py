@@ -1,7 +1,7 @@
 from unittest import TestCase
 import heapq
 
-from src.main import HuffmanTree, HuffmanNode, HuffmanEncoder, HuffmanDecoder
+from src.main import HuffmanNode, HuffmanEncoder, HuffmanDecoder
 
 
 class TestHuffmanEncoder(TestCase):
