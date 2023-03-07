@@ -86,10 +86,6 @@ class Interface:
         if not os.path.exists(self.args['input_file']):
             self.log.error('Input file not found: %s', self.args['input_file'])
             raise FileNotFoundError('Input file not found')
-        # check if the input file is a text file
-        if not self.args['input_file'].endswith('.txt'):
-            self.log.error('Input file is not a text file: %s', self.args['input_file'])
-            raise ValueError('Input file is not a text file')
         # check if output file already exists
         self.args['output_file'] = self.args['input_file'].replace('.txt', '.bin')
         if os.path.exists(self.args['output_file']) and not self.args['overwrite']:
