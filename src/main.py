@@ -11,6 +11,7 @@
 # 4. HuffmanDecoder
 
 import heapq
+import collections
 
 
 class HuffmanTree:
@@ -86,7 +87,12 @@ class HuffmanEncoder:
         priority queue (heap) that is used to construct
         the Huffman tree.
         """
-        pass
+        d = collections.Counter(self.string)  # count the characters --> dict
+        # use heapq to create a priority queue
+        for key, value in d.items():
+            node = HuffmanNode(key, value)
+            heapq.heappush(self.heap, node)
+        return self.heap
 
     def build_tree(self):
         """
