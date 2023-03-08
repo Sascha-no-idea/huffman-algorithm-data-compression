@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 
-from main import HuffmanEncoder, HuffmanDecoder
+from src.main import HuffmanEncoder, HuffmanDecoder
 
 
 class Interface:
@@ -148,3 +148,7 @@ class Interface:
             self.compression_ratio()
         elif self.args['mode'] == 'decompression':
             self.decompress()
+
+
+if __name__ == '__main__':
+    Interface().run()
