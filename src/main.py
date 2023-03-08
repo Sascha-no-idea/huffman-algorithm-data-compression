@@ -174,7 +174,50 @@ class HuffmanDecoder:
     def __init__(self, encoded_string, log):
         self.encoded_string = encoded_string
         self.log = log
-        self.current_node = self.tree
+
+    def read_until(self, char: int, delete: bool = False):
+        """
+        This function reads the encoded string until the
+        specified character is encountered.
+        """
+        if char not in [0, 1]:
+            raise ValueError('char must be 0 or 1')
+        char = str(char)
+        i = 0
+        while self.encoded_string[i] != char:
+            i += 1
+            if i >= len(self.encoded_string):
+                raise ValueError('char not found')
+        result = self.encoded_string[:i]
+        if delete:
+            self.encoded_string = self.encoded_string[i:]
+        return result, i
+
+    def read_next(self, number: int, delete: bool = False):
+        """
+        This function reads the next n characters from
+        the encoded string.
+        """
+        if number < 0:
+            raise ValueError('number must be non-negative')
+        result = self.encoded_string[:number]
+        if delete:
+            self.encoded_string = self.encoded_string[number:]
+        return result
+
+    def decode_array(self):
+        # read until the first 0 is encountered
+        _, depth = self.read_until(0, delete=True)
+        # read the number of codes
+        number_of_codes = int(self.read_next(8, delete=True), 2)
+        # read the codes and the characters
+        self.codes = {}
+        for _ in range(number_of_codes):
+            code = self.read_next(depth, delete=True)
+            char = self.read_next(8, delete=True)
+            char = int(char, 2).to_bytes(1, 'big').decode('utf-8')
+            self.codes[code] = char
+            # TODO: improve performance by using numpy arrays
 
     def decode_tree(self):
         """
@@ -194,10 +237,16 @@ class HuffmanDecoder:
         """
         This function decodes the encoded string.
         """
-        pass
+        self.decode_array()
 
 
 # for debugging
 if __name__ == '__main__':
-    encoder = HuffmanEncoder('ABRAKADABRA', 1, None)
-    encoder.encode()
+    #encoder = HuffmanEncoder('ABRAKADABRA', 1, None)
+    #encoder.encode()
+
+    decoder = HuffmanDecoder(
+        '111000001010000100000110001001011101010001001100101001011101000010',
+        None,
+    )
+    decoder.decode()

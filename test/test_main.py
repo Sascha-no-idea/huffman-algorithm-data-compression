@@ -87,3 +87,44 @@ class TestHuffmanEncoder(TestCase):
         encoder.build_codes()
         encoder.encode_string()
         self.assertEqual(encoder.encoded_string, '01111100100010101111100')
+
+
+class TestHuffmanDecoder(TestCase):
+    def test_read_until(self):
+        string = '111111001010100'
+        decoder = HuffmanDecoder(string, None)
+        result, i = decoder.read_until(0)
+        self.assertEqual(result, '111111')
+        self.assertEqual(i, 6)
+        result, i = decoder.read_until(0, delete=True)
+        self.assertEqual(result, '111111')
+        self.assertEqual(i, 6)
+        self.assertEqual(decoder.encoded_string, '001010100')
+        result, i = decoder.read_until(1)
+        self.assertEqual(result, '00')
+
+    def test_read_next(self):
+        string = '111111001010100'
+        decoder = HuffmanDecoder(string, None)
+        result = decoder.read_next(3)
+        self.assertEqual(result, '111')
+        result = decoder.read_next(3, delete=True)
+        self.assertEqual(result, '111')
+        self.assertEqual(decoder.encoded_string, '111001010100')
+
+    def test_decode_string(self):
+        decoder = HuffmanDecoder(
+            '111000001010000100000110001001011101010001001100101001011101000010',
+            None,
+        )
+        decoder.decode_array()
+        self.assertEqual(
+            decoder.codes,
+            {
+                '000': 'A',
+                '111': 'B',
+                '110': 'R',
+                '100': 'K',
+                '101': 'D',
+            }
+        )
