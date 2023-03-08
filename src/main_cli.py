@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 
-from src.main import HuffmanEncoder, HuffmanDecoder
+from main import HuffmanEncoder, HuffmanDecoder
 
 
 class Interface:
@@ -103,8 +103,10 @@ class Interface:
     def check_mode(self):
         if self.args['input_file'].endswith('.txt'):
             self.args['mode'] = 'compression'
+            self.args['output_file'] = self.args['input_file'].replace('.txt', '.bin')
         elif self.args['input_file'].endswith('.bin'):
             self.args['mode'] = 'decompression'
+            self.args['output_file'] = self.args['input_file'].replace('.bin', '.txt')
         else:
             self.log.error('Invalid file extension: %s', self.args['input_file'])
             raise ValueError('Invalid file extension')
@@ -115,10 +117,10 @@ class Interface:
             string = f.read()
         # compress the string
         encoder = HuffmanEncoder(string, self.args['level'], self.log)
-        encoded_string = encoder.encode()
+        byte_array = encoder.encode()
         # write the encoded string to the output file
         with open(self.args['output_file'], 'wb') as f:
-            f.write(encoded_string)
+            f.write(byte_array)
 
     def decompress(self):
         # read the input file
