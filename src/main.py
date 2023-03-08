@@ -11,7 +11,9 @@
 # 4. HuffmanDecoder
 
 import heapq
+import numpy as np
 import collections
+from bitstring import BitArray
 
 
 class HuffmanNode:
@@ -46,7 +48,7 @@ class HuffmanEncoder:
     Huffman algorithm. It takes a string as input, analyzes
     the string, creates a Huffman tree, and encodes the
     string using the Huffman tree. The encoded string is
-    returned as a binary string.
+    returned as a byte array.
     """
     def __init__(self, string, level, log):
         self.string = string
@@ -90,6 +92,10 @@ class HuffmanEncoder:
         in the string.
         """
         self.codes = {}  # TODO: improve performance
+        # TODO: since dict is not ordered, a bug might occur
+        # when the identifier is supposed to be determined
+        # by the first character in the string (b'0') when
+        # the order changes
 
         def traverse_tree(node, current_code):
             if node is None:  # is this necessary?
@@ -99,10 +105,44 @@ class HuffmanEncoder:
                 self.codes[node.char] = current_code
                 return
             # traverse the left and right subtrees
-            traverse_tree(node.left, current_code + b'0')
-            traverse_tree(node.right, current_code + b'1')
+            traverse_tree(node.left, current_code + '0')
+            traverse_tree(node.right, current_code + '1')
 
-        traverse_tree(self.tree, b'')
+        traverse_tree(self.tree, '')
+
+    def encode_array(self):
+        """
+        This function encodes the array that is used for translating
+        the ASCII characters into the binary string.
+        """
+        # define helper functions
+        def pad_zeros(code: str, max_length: int):
+            return code.zfill(max_length)
+
+        def char_to_binary(char: str):
+            # NOTE: this only works for single characters
+            return format(char.encode('utf-8')[0], '08b')
+
+        # convert the codes and chars to numpy arrays
+        codes = np.array(list(self.codes.values()), dtype=object)
+        chars = np.array(list(self.codes.keys()), dtype=object)
+        # use vectorized helper functions
+        bin_chars = np.vectorize(char_to_binary, otypes=[object])(chars)
+        max_length = np.max(np.vectorize(len)(codes))
+        codes = np.vectorize(pad_zeros)(codes, max_length)
+        # concatenate the codes and the chars
+        pairs = codes + bin_chars
+        identifier = '1' * max_length
+        number = bin(len(self.codes))[2:].zfill(8)
+        # NOTE: Number of ones identifies the length of the codes.
+        # Since the first character is always a 0, the identifier
+        # is determined by the first character. The end of the
+        # identifier is determined by a 0. Since the last code will
+        # be the longest code, it has to start with a 1. That is why
+        # 0 can be used to find the end.
+        self.encoded_array = identifier + number + np.sum(pairs, axis=0)
+        # TODO: automatically switch to dense array if its
+        # size is smaller than the sparse array
 
     def encode_string(self):
         """
@@ -110,9 +150,20 @@ class HuffmanEncoder:
         tree.
         """
         # TODO: improve performance by using a bytearray?
-        self.encoded_string = b''
+        self.encoded_string = ''
         for char in self.string:
             self.encoded_string += self.codes[char]
+
+    def bits_to_bytes(self, size=8, pad='0'):
+        """
+        This function converts a binary string into a byte array.
+        It was taken from https://stackoverflow.com/a/47311736.
+        """
+        bits = self.encoded_array + self.encoded_string
+        chunks = [bits[n:n+size] for n in range(0, len(bits), size)]
+        if pad:
+            chunks[-1] = chunks[-1].ljust(size, pad)
+        self.byte_array = bytearray([int(c, 2) for c in chunks])
 
     def encode(self):
         """
@@ -122,7 +173,10 @@ class HuffmanEncoder:
         self.analyze_string()
         self.build_tree()
         self.build_codes()
+        self.encode_array()
         self.encode_string()
+        self.bits_to_bytes()
+        return self.byte_array
 
 
 class HuffmanDecoder:

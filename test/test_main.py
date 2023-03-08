@@ -53,12 +53,31 @@ class TestHuffmanEncoder(TestCase):
         encoder.build_tree()
         encoder.build_codes()
         self.assertEqual(encoder.codes, {
-            'A': b'0',
-            'B': b'111',
-            'R': b'110',
-            'K': b'100',
-            'D': b'101'
+            'A': '0',
+            'B': '111',
+            'R': '110',
+            'K': '100',
+            'D': '101'
         })
+
+    def test_encode_array(self):
+        string = 'ABRAKADABRA'
+        encoder = HuffmanEncoder(string, 1, None)
+        encoder.analyze_string()
+        encoder.build_tree()
+        encoder.build_codes()
+        encoder.encode_array()
+        self.assertEqual(
+            encoder.encoded_array,
+            '111000001010000100000110001001011101010001001100101001011101000010'
+        )
+        # NOTE: array was manually built according to the following pattern:
+        # non-repeating
+        # identifier: 111  # has the length 3 as its the length of the first code
+        #
+        # repeating
+        # code: 000  # this is the code for 'A' padded with 0s
+        # unicode: 01000001  # this is the unicode for 'A' in binary (8 bits) 
 
     def test_encode_string(self):
         string = 'ABRAKADABRA'
@@ -67,7 +86,7 @@ class TestHuffmanEncoder(TestCase):
         encoder.build_tree()
         encoder.build_codes()
         encoder.encode_string()
-        self.assertEqual(encoder.encoded_string, b'01111100100010101111100')
+        self.assertEqual(encoder.encoded_string, '01111100100010101111100')
 
     def test_encode(self):
         pass
