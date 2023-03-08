@@ -13,7 +13,6 @@
 import heapq
 import numpy as np
 import collections
-from bitstring import BitArray
 
 
 class HuffmanNode:
@@ -48,7 +47,7 @@ class HuffmanEncoder:
     Huffman algorithm. It takes a string as input, analyzes
     the string, creates a Huffman tree, and encodes the
     string using the Huffman tree. The encoded string is
-    returned as a byte array.
+    returned.
     """
     def __init__(self, string, level, log):
         self.string = string
@@ -151,17 +150,6 @@ class HuffmanEncoder:
         for char in self.string:
             self.encoded_string += self.codes[char]
 
-    def bits_to_bytes(self, size=8, pad='0'):
-        """
-        This function converts a binary string into a byte array.
-        It was taken from https://stackoverflow.com/a/47311736.
-        """
-        bits = self.encoded_array + self.encoded_string
-        chunks = [bits[n:n+size] for n in range(0, len(bits), size)]
-        if pad:
-            chunks[-1] = chunks[-1].ljust(size, pad)
-        self.byte_array = bytearray([int(c, 2) for c in chunks])
-
     def encode(self):
         """
         This function analyzes the string, builds the tree,
@@ -172,8 +160,7 @@ class HuffmanEncoder:
         self.build_codes()
         self.encode_array()
         self.encode_string()
-        self.bits_to_bytes()
-        return self.byte_array
+        return self.encoded_array + self.encoded_string
 
 
 class HuffmanDecoder:

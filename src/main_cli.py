@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+from bitstring import BitArray
 
 from main import HuffmanEncoder, HuffmanDecoder
 
@@ -111,13 +112,27 @@ class Interface:
             self.log.error('Invalid file extension: %s', self.args['input_file'])
             raise ValueError('Invalid file extension')
 
+    def bits_to_bytes(self, bits, size=8, pad='0'):
+        """
+        This function converts a binary string into a byte array.
+        It was taken from https://stackoverflow.com/a/47311736.
+        """
+        chunks = [bits[n:n+size] for n in range(0, len(bits), size)]
+        if pad:
+            chunks[-1] = chunks[-1].ljust(size, pad)
+        return bytearray([int(c, 2) for c in chunks])
+
+    def bytes_to_bits(self, byte_array):
+        return BitArray(byte_array).bin
+
     def compress(self):
         # read the input file
         with open(self.args['input_file'], 'r') as f:
             string = f.read()
         # compress the string
         encoder = HuffmanEncoder(string, self.args['level'], self.log)
-        byte_array = encoder.encode()
+        encoded_string = encoder.encode()
+        byte_array = self.bits_to_bytes(encoded_string)
         # write the encoded string to the output file
         with open(self.args['output_file'], 'wb') as f:
             f.write(byte_array)
@@ -125,8 +140,9 @@ class Interface:
     def decompress(self):
         # read the input file
         with open(self.args['input_file'], 'rb') as f:
-            encoded_string = f.read()
+            encoded_bytes = f.read()
         # decompress the string
+        encoded_string = self.bytes_to_bits(encoded_bytes)
         string = HuffmanDecoder(encoded_string, self.log).decode()
         # write the decoded string to the output file
         with open(self.args['output_file'], 'w') as f:
