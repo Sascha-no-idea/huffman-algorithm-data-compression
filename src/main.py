@@ -109,7 +109,10 @@ class HuffmanEncoder:
         This function encodes the string using the Huffman
         tree.
         """
-        pass
+        # TODO: improve performance by using a bytearray?
+        self.encoded_string = b''
+        for char in self.string:
+            self.encoded_string += self.codes[char]
 
     def encode(self):
         """
@@ -119,6 +122,7 @@ class HuffmanEncoder:
         self.analyze_string()
         self.build_tree()
         self.build_codes()
+        self.encode_string()
 
 
 class HuffmanDecoder:
