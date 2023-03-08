@@ -87,6 +87,3 @@ class TestHuffmanEncoder(TestCase):
         encoder.build_codes()
         encoder.encode_string()
         self.assertEqual(encoder.encoded_string, '01111100100010101111100')
-
-    def test_encode(self):
-        pass
