@@ -47,7 +47,18 @@ class TestHuffmanEncoder(TestCase):
         )
 
     def test_build_codes(self):
-        pass
+        string = 'ABRAKADABRA'
+        encoder = HuffmanEncoder(string, 1, None)
+        encoder.analyze_string()
+        encoder.build_tree()
+        encoder.build_codes()
+        self.assertEqual(encoder.codes, {
+            'A': b'0',
+            'B': b'111',
+            'R': b'110',
+            'K': b'100',
+            'D': b'101'
+        })
 
     def test_encode_string(self):
         pass

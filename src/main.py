@@ -89,7 +89,20 @@ class HuffmanEncoder:
         This function builds the codes for each character
         in the string.
         """
-        pass
+        self.codes = {}  # TODO: improve performance
+
+        def traverse_tree(node, current_code):
+            if node is None:  # is this necessary?
+                return
+
+            if node.char is not None:  # leaf node
+                self.codes[node.char] = current_code
+                return
+            # traverse the left and right subtrees
+            traverse_tree(node.left, current_code + b'0')
+            traverse_tree(node.right, current_code + b'1')
+
+        traverse_tree(self.tree, b'')
 
     def encode_string(self):
         """
@@ -105,6 +118,7 @@ class HuffmanEncoder:
         """
         self.analyze_string()
         self.build_tree()
+        self.build_codes()
 
 
 class HuffmanDecoder:
@@ -139,3 +153,9 @@ class HuffmanDecoder:
         This function decodes the encoded string.
         """
         pass
+
+
+# for debugging
+if __name__ == '__main__':
+    encoder = HuffmanEncoder('ABRAKADABRA', 1, None)
+    encoder.encode()
