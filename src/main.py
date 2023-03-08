@@ -135,11 +135,9 @@ class HuffmanEncoder:
         identifier = '1' * max_length
         number = bin(len(self.codes))[2:].zfill(8)
         # NOTE: Number of ones identifies the length of the codes.
-        # Since the first character is always a 0, the identifier
-        # is determined by the first character. The end of the
-        # identifier is determined by a 0. Since the last code will
-        # be the longest code, it has to start with a 1. That is why
-        # 0 can be used to find the end.
+        # After the identifier follows the number of codes as an 8-bit
+        # binary number. For 128 ASCII characters, the number starts
+        # with 0 --> separator between identifier and number is 0.
         self.encoded_array = identifier + number + np.sum(pairs, axis=0)
         # TODO: automatically switch to dense array if its
         # size is smaller than the sparse array
@@ -149,7 +147,6 @@ class HuffmanEncoder:
         This function encodes the string using the Huffman
         tree.
         """
-        # TODO: improve performance by using a bytearray?
         self.encoded_string = ''
         for char in self.string:
             self.encoded_string += self.codes[char]
