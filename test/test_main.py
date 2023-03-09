@@ -114,7 +114,7 @@ class TestHuffmanDecoder(TestCase):
 
     def test_decode_array(self):
         decoder = HuffmanDecoder(
-            '111000001010000100000110001001011101010001001100101001011101000010',
+            '111000001010000100000110001001011101010001001100101001011101000010011111001000101011111000000000',
             None,
         )
         decoder.decode_array()
@@ -131,7 +131,7 @@ class TestHuffmanDecoder(TestCase):
 
     def test_decode_tree(self):
         decoder = HuffmanDecoder(
-            '111000001010000100000110001001011101010001001100101001011101000010',
+            '111000001010000100000110001001011101010001001100101001011101000010011111001000101011111000000000',
             None,
         )
         decoder.decode_array()
@@ -173,7 +173,7 @@ class TestHuffmanDecoder(TestCase):
 
     def test_optimize_tree(self):
         decoder = HuffmanDecoder(
-            '111000001010000100000110001001011101010001001100101001011101000010',
+            '111000001010000100000110001001011101010001001100101001011101000010011111001000101011111000000000',
             None,
         )
         decoder.decode_array()
@@ -203,3 +203,15 @@ class TestHuffmanDecoder(TestCase):
                 ),
             )
         )
+
+    def test_decode_data(self):
+        decoder = HuffmanDecoder(
+            '111000001010000100000110001001011101010001001100101001011101000010011111001000101011111000000000',
+            None,
+        )
+        decoder.decode_array()
+        decoder.decode_tree()
+        decoder.optimize_tree()
+        decoder.decode_data()
+        print(decoder.decoded_string)
+        self.assertEqual(decoder.decoded_string, 'ABRAKADABRA')

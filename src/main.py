@@ -271,7 +271,18 @@ class HuffmanDecoder:
         This function decodes the encoded data from the
         encoded string.
         """
-        pass
+        self.decoded_string = ''
+        self.current = self.tree
+        for char in self.encoded_string:
+            if char == '0':
+                self.encoded_string = self.encoded_string[1:]
+                self.current = self.current.left
+            elif char == '1':
+                self.encoded_string = self.encoded_string[1:]
+                self.current = self.current.right
+            if self.current.char is not None:
+                self.decoded_string += self.current.char
+                self.current = self.tree
 
     def decode(self):
         """
@@ -280,6 +291,7 @@ class HuffmanDecoder:
         self.decode_array()
         self.decode_tree()
         self.optimize_tree()
+        self.decode_data()
 
 
 # for debugging
@@ -288,7 +300,7 @@ if __name__ == '__main__':
     #encoder.encode()
 
     decoder = HuffmanDecoder(
-        '111000001010000100000110001001011101010001001100101001011101000010',
+        '111000001010000100000110001001011101010001001100101001011101000010011111001000101011111000000000',
         None,
     )
     decoder.decode()
