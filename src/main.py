@@ -21,11 +21,11 @@ class HuffmanNode:
     a character, a frequency, and a pointer to the left and
     and right child nodes.
     """
-    def __init__(self, char, freq, left=None, right=None):
+    def __init__(self, char=None, freq=None, left=None, right=None):
         self.char = char
         self.freq = freq
-        self.left = None
-        self.right = None
+        self.left = left
+        self.right = right
 
     def __lt__(self, other):
         return self.freq < other.freq
@@ -96,7 +96,7 @@ class HuffmanEncoder:
         # by the first character in the string (b'0') when
         # the order changes
 
-        def traverse_tree(node, current_code):
+        def traverse_tree(node, current_code=''):
             if node is None:  # is this necessary?
                 return
 
@@ -107,7 +107,7 @@ class HuffmanEncoder:
             traverse_tree(node.left, current_code + '0')
             traverse_tree(node.right, current_code + '1')
 
-        traverse_tree(self.tree, '')
+        traverse_tree(self.tree)
 
     def encode_array(self):
         """
@@ -224,7 +224,47 @@ class HuffmanDecoder:
         This function decodes the Huffman tree from the
         encoded string.
         """
-        pass
+        self.tree = HuffmanNode()
+        for code, leaf in self.codes.items():
+            current_node = self.tree
+            for direction in code:
+                if direction == '0':
+                    if current_node.left is None:
+                        current_node.left = HuffmanNode()
+                    current_node = current_node.left
+                elif direction == '1':
+                    if current_node.right is None:
+                        current_node.right = HuffmanNode()
+                    current_node = current_node.right
+            current_node.char = leaf
+
+    def optimize_tree(self):
+        """
+        As the current tree has paths of standardized length,
+        due to the encoding of the tree, the tree can be optimized
+        in order to shorten paths that have no further branches.
+        """
+        def traverse_tree(node, current_code=''):
+            # traverse to the deepest node
+            if node.left is None and node.right is None:
+                # must be a leaf node with a character
+                return node.char
+
+            if node.left is not None:
+                # traverse the left subtree
+                left_char = traverse_tree(node.left, current_code + '0')
+                if node.right is None:
+                    # if there is no right subtree, the left subtree
+                    # must be a leaf node with a character
+                    node.left = None
+                    node.char = left_char
+                    return left_char
+
+            if node.right is not None:
+                # traverse the right subtree
+                traverse_tree(node.right, current_code + '1')
+
+        traverse_tree(self.tree)
 
     def decode_data(self):
         """
@@ -238,6 +278,8 @@ class HuffmanDecoder:
         This function decodes the encoded string.
         """
         self.decode_array()
+        self.decode_tree()
+        self.optimize_tree()
 
 
 # for debugging

@@ -112,7 +112,7 @@ class TestHuffmanDecoder(TestCase):
         self.assertEqual(result, '111')
         self.assertEqual(decoder.encoded_string, '111001010100')
 
-    def test_decode_string(self):
+    def test_decode_array(self):
         decoder = HuffmanDecoder(
             '111000001010000100000110001001011101010001001100101001011101000010',
             None,
@@ -127,4 +127,79 @@ class TestHuffmanDecoder(TestCase):
                 '100': 'K',
                 '101': 'D',
             }
+        )
+
+    def test_decode_tree(self):
+        decoder = HuffmanDecoder(
+            '111000001010000100000110001001011101010001001100101001011101000010',
+            None,
+        )
+        decoder.decode_array()
+        decoder.decode_tree()
+        self.assertEqual(
+            decoder.tree,
+            HuffmanNode(
+                None,
+                None,
+                HuffmanNode(
+                    None,
+                    None,
+                    HuffmanNode(
+                        None,
+                        None,
+                        HuffmanNode('A', None, None, None,),
+                        None,
+                    ),
+                    None,
+                ),
+                HuffmanNode(
+                    None,
+                    None,
+                    HuffmanNode(
+                        None,
+                        None,
+                        HuffmanNode('K', None, None, None),
+                        HuffmanNode('D', None, None, None),
+                    ),
+                    HuffmanNode(
+                        None,
+                        None,
+                        HuffmanNode('R', None, None, None),
+                        HuffmanNode('B', None, None, None),
+                    ),
+                ),
+            )
+        )
+
+    def test_optimize_tree(self):
+        decoder = HuffmanDecoder(
+            '111000001010000100000110001001011101010001001100101001011101000010',
+            None,
+        )
+        decoder.decode_array()
+        decoder.decode_tree()
+        decoder.optimize_tree()
+        self.assertEqual(
+            decoder.tree,
+            HuffmanNode(
+                None,
+                None,
+                HuffmanNode('A', None, None, None,),
+                HuffmanNode(
+                    None,
+                    None,
+                    HuffmanNode(
+                        None,
+                        None,
+                        HuffmanNode('K', None, None, None),
+                        HuffmanNode('D', None, None, None),
+                    ),
+                    HuffmanNode(
+                        None,
+                        None,
+                        HuffmanNode('R', None, None, None),
+                        HuffmanNode('B', None, None, None),
+                    ),
+                ),
+            )
         )
