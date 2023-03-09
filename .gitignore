@@ -130,3 +130,6 @@ dmypy.json
 
 # logs
 log.txt
+
+# junk folder
+junk/
