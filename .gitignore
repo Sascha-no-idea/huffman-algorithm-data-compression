@@ -133,3 +133,9 @@ log.txt
 
 # junk folder
 junk/
+
+# vscode
+.vscode/
+
+# all .bin files in ./test
+test/*.bin
