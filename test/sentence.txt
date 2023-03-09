@@ -1,0 +1,1 @@
+This is standard test sentence without special characters.
