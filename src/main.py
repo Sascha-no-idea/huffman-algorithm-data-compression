@@ -132,12 +132,16 @@ class HuffmanEncoder:
         # concatenate the codes and the chars
         pairs = codes + bin_chars
         identifier = '1' * max_length
-        number = bin(len(self.codes))[2:].zfill(8)
-        # NOTE: Number of ones identifies the length of the codes.
-        # After the identifier follows the number of codes as an 8-bit
-        # binary number. For 128 ASCII characters, the number starts
-        # with 0 --> separator between identifier and number is 0.
-        self.encoded_array = identifier + number + np.sum(pairs, axis=0)
+        number = bin(len(self.codes))[2:].zfill(7)
+        # The first 3 bits are reserved for the length of the right
+        # padding, that is added to round the length of the encoded
+        # bits to a multiple of 8.
+        # After the identifier follows the number of codes as an 7-bit
+        # binary number (max. 128 codes = ASCII).
+        # Number of following ones identifies the length of the codes.
+        # Since the order of codes is preserved, the first code will be
+        # '0', thus determining the end of the identifier.
+        self.encoded_array = number + identifier + np.sum(pairs, axis=0)
         # TODO: automatically switch to dense array if its
         # size is smaller than the sparse array
 
@@ -150,6 +154,11 @@ class HuffmanEncoder:
         for char in self.string:
             self.encoded_string += self.codes[char]
 
+    def finalize_encoding(self):
+        self.finalized_string = self.encoded_array + self.encoded_string
+        length = bin(8 - ((len(self.finalized_string) + 3) % 8))[2:].zfill(3)
+        self.finalized_string = length + self.finalized_string
+
     def encode(self):
         """
         This function analyzes the string, builds the tree,
@@ -160,7 +169,8 @@ class HuffmanEncoder:
         self.build_codes()
         self.encode_array()
         self.encode_string()
-        return self.encoded_array + self.encoded_string
+        self.finalize_encoding()
+        return self.finalized_string
 
 
 class HuffmanDecoder:
@@ -206,10 +216,13 @@ class HuffmanDecoder:
         return result
 
     def decode_array(self):
+        # read the length of the right padding and delete it
+        right_padding = int(self.read_next(3, delete=True), 2)
+        self.encoded_string = self.encoded_string[:-right_padding]
+        # read the number of codes
+        number_of_codes = int(self.read_next(7, delete=True), 2)
         # read until the first 0 is encountered
         _, depth = self.read_until(0, delete=True)
-        # read the number of codes
-        number_of_codes = int(self.read_next(8, delete=True), 2)
         # read the codes and the characters
         self.codes = {}
         for _ in range(number_of_codes):
@@ -271,7 +284,18 @@ class HuffmanDecoder:
         This function decodes the encoded data from the
         encoded string.
         """
-        pass
+        self.decoded_string = ''
+        self.current = self.tree
+        for char in self.encoded_string:
+            if char == '0':
+                self.encoded_string = self.encoded_string[1:]
+                self.current = self.current.left
+            elif char == '1':
+                self.encoded_string = self.encoded_string[1:]
+                self.current = self.current.right
+            if self.current.char is not None:
+                self.decoded_string += self.current.char
+                self.current = self.tree
 
     def decode(self):
         """
@@ -280,6 +304,8 @@ class HuffmanDecoder:
         self.decode_array()
         self.decode_tree()
         self.optimize_tree()
+        self.decode_data()
+        return self.decoded_string
 
 
 # for debugging
@@ -288,7 +314,7 @@ if __name__ == '__main__':
     #encoder.encode()
 
     decoder = HuffmanDecoder(
-        '111000001010000100000110001001011101010001001100101001011101000010',
+        '101000010111100001000001100010010111010100010011001010010111010000100111110010001010111110000000',
         None,
     )
     decoder.decode()
