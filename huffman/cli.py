@@ -34,7 +34,9 @@ class Interface:
             '--output_file',
             type=str,
             help='path to the output file',
-            required=False
+            required=False,
+            default=False,
+            nargs='?',
         )
         parser.add_argument(
             '-f',
@@ -118,7 +120,10 @@ class Interface:
                 self.log.info('decompression mode selected')
 
     def check_output_path(self):
-        if self.args['output_file'] is None:
+        if self.args['output_file'] is False:  # output to stdout
+            self.args['output_file'] = None
+            return
+        if self.args['output_file'] is None:  # generate output path
             if self.args['input_file'] is not None:
                 if self.args['mode'] == 'compression':
                     self.args['output_file'] = self.args['input_file'].replace('.txt', '.huff')
@@ -131,6 +136,8 @@ class Interface:
                     self.args['output_file'] = 'output.txt'
 
     def check_output_file(self):
+        if self.args['output_file'] is None:  # output to stdout
+            return
         if os.path.exists(self.args['output_file']):
             if not self.args['force']:
                 self.log.error('Output file already exists and --force flag not set')
@@ -174,9 +181,13 @@ class Interface:
         byte_array = self.bits_to_bytes(encoded_string)
         self.log.debug('Byte array: %s', byte_array)
         # write the encoded string to the output file
-        self.log.info('Writing output file: %s', self.args['output_file'])
-        with open(self.args['output_file'], 'wb') as f:
-            f.write(byte_array)
+        if self.args['output_file'] is not None:
+            self.log.info('Writing output file: %s', self.args['output_file'])
+            with open(self.args['output_file'], 'wb') as f:
+                f.write(byte_array)
+        else:
+            self.log.info('Writing output to stdout')
+            print(byte_array, file=sys.stdout)
 
     def decompress(self):
         # read the input file
@@ -193,17 +204,25 @@ class Interface:
         self.log.info('Starting HuffmanDecoder')
         string = HuffmanDecoder(encoded_string, self.log).decode()
         # write the decoded string to the output file
-        self.log.info('Writing output file: %s', self.args['output_file'])
-        with open(self.args['output_file'], 'w') as f:
-            f.write(string)
+        if self.args['output_file'] is not None:
+            self.log.info('Writing output file: %s', self.args['output_file'])
+            with open(self.args['output_file'], 'w') as f:
+                f.write(string)
+        else:
+            self.log.info('Writing output to stdout')
+            print(string, file=sys.stdout)
 
     def compression_ratio(self):
-        self.log.debug('Calculating compression ratio')
+        if self.args['output_file'] is not None:
+            compressed_size = os.path.getsize(self.args['output_file'])
+        else:
+            self.log.info('Compression ratio not available in stdout mode')
+            return
         if self.args['input_file'] is not None:
             uncompressed_size = os.path.getsize(self.args['input_file'])
         else:
             uncompressed_size = len(self.args['input_string'])
-        compressed_size = os.path.getsize(self.args['output_file'])
+        self.log.debug('Calculating compression ratio')
         compression_ratio = compressed_size / uncompressed_size * 100
         self.log.info(f'Compression ratio: {compression_ratio:.2f} %')
 
