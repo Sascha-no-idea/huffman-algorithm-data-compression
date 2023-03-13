@@ -116,7 +116,8 @@ class HuffmanEncoder:
         """
         # define helper functions
         def pad_zeros(code: str, max_length: int):
-            return code.zfill(max_length)
+            # invert string twice to pad zeros on the right
+            return code[::-1].zfill(max_length)[::-1]
 
         def char_to_binary(char: str):
             # NOTE: this only works for single characters
@@ -310,8 +311,8 @@ class HuffmanDecoder:
 
 # for debugging
 if __name__ == '__main__':
-    #encoder = HuffmanEncoder('ABRAKADABRA', 1, None)
-    #encoder.encode()
+    encoder = HuffmanEncoder('ABRAKADABRA', 1, None)
+    encoder.encode()
 
     decoder = HuffmanDecoder(
         '101000010111100001000001100010010111010100010011001010010111010000100111110010001010111110000000',
