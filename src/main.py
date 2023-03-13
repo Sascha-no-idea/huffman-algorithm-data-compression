@@ -63,6 +63,20 @@ class HuffmanEncoder:
         priority queue (heap) that is used to construct
         the Huffman tree.
         """
+        # check if the string is empty
+        if not self.string:
+            raise ValueError('The string is empty.')
+        # check if string contains only ASCII characters
+        try:
+            self.string_array = np.fromstring(self.string, dtype='S1').astype('U1')
+        except UnicodeDecodeError:
+            # check precisely which characters are not ASCII
+            for i, char in enumerate(self.string):
+                # check if the character can be encoded using 8 bits
+                if not len(char) == len(char.encode()):
+                    raise ValueError(
+                        f'The string contains the non-ASCII character "{char}" at index {i}.'
+                    )
         d = collections.Counter(self.string)  # count the characters --> dict
         # use heapq to create a priority queue
         for key, value in d.items():

@@ -26,7 +26,7 @@ corrupt behavior.
 Moving on to Goethe's Faust, we find another interesting use of the rubber duck as a symbol. In the second part
 of the play, Faust seeks enlightenment and knowledge, and his quest takes him to the court of the emperor, where
 he becomes embroiled in the politics of the day. At one point, Faust presents the emperor with a new
-invention – a rubber duck. The emperor is thrilled with the novelty of the toy, and orders his courtiers to chase
+invention - a rubber duck. The emperor is thrilled with the novelty of the toy, and orders his courtiers to chase
 after it, thus distracting them from their work. However, the duck soon pops, and the emperor is left feeling
 disappointed and unsatisfied.
 
