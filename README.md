@@ -17,9 +17,9 @@ python main.py -i <input_file_name>.bin
 ### Options
 - `-o, --overwrite` Overwrite the output file if it already exists
 - `-l, --level` Set the compression level (default: 1)
-    - 1: Huffman Coding with single character encoding
-    - 2: Huffman Coding with multi character encoding
-- `-v, --verbose` Print verbose output 
+    - 1: Huffman Coding with single character encoding (default)
+    - 2: Huffman Coding with multi character encoding (not implemented yet)
+- `-v, --verbose` Print verbose output
 - `-d, --debug` Print debug output
 - `-h, --help` Print help message
 ### Run Unit Tests
