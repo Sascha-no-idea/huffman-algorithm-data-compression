@@ -75,7 +75,7 @@ class HuffmanEncoder:
                 # check if the character can be encoded using 8 bits
                 if not len(char) == len(char.encode()):
                     raise ValueError(
-                        f'The string contains the non-ASCII character "{char}" at index {i}.'
+                        f'Character {i+1} in string is non-ASCII: "{char}".'
                     )
         d = collections.Counter(self.string)  # count the characters --> dict
         # use heapq to create a priority queue
@@ -325,7 +325,7 @@ class HuffmanDecoder:
 
 # for debugging
 if __name__ == '__main__':
-    encoder = HuffmanEncoder('ABRAKADABRA', 1, None)
+    encoder = HuffmanEncoder('ABRAKADABRA–', 1, None)
     encoder.encode()
 
     decoder = HuffmanDecoder(
