@@ -23,14 +23,14 @@ def run_test(file):
     with open('test/' + file, 'r') as f:
         original = f.read()
     # encode
-    subprocess(['python3', 'src/main_cli.py', '-i', 'test/' + file])
+    subprocess.call(['python3', 'src/main_cli.py', '-i', 'test/' + file])
     # check if file exists
     if not os.path.isfile('test/' + file.replace('.txt', '.bin')):
         raise FileNotFoundError(f'Encoded file {file.replace(".txt", ".bin")} not found!')
     # delete
     os.remove('test/' + file)
     # decode
-    subprocess(['python3', 'src/main_cli.py', '-i', 'test/' + file.replace('.txt', '.bin')])
+    subprocess.call(['python3', 'src/main_cli.py', '-i', 'test/' + file.replace('.txt', '.bin')])
     # check if file exists
     if not os.path.isfile('test/' + file):
         raise FileNotFoundError(f'Decoded file {file} not found!')
