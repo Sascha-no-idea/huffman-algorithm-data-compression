@@ -7,7 +7,7 @@ from src.main import HuffmanNode, HuffmanEncoder, HuffmanDecoder
 class TestHuffmanEncoder(TestCase):
     def test_analyze_string(self):
         string = 'ABRAKADABRA'
-        encoder = HuffmanEncoder(string, 1, None)
+        encoder = HuffmanEncoder(string, 1)
         encoder.analyze_string()
         self.assertEqual(heapq.heappop(encoder.heap), HuffmanNode('K', 1))
         self.assertEqual(heapq.heappop(encoder.heap), HuffmanNode('D', 1))
@@ -17,14 +17,14 @@ class TestHuffmanEncoder(TestCase):
 
     def test_analyze_string_non_ascii(self):
         string = 'ABRAKADABRA–'  # the last character is a non-ascii character
-        encoder = HuffmanEncoder(string, 1, None)
+        encoder = HuffmanEncoder(string, 1)
         # check if ValueError is raised
         with self.assertRaisesRegex(ValueError, 'non-ASCII'):
             encoder.analyze_string()
 
     def test_build_tree(self):
         string = 'ABRAKADABRA'
-        encoder = HuffmanEncoder(string, 1, None)
+        encoder = HuffmanEncoder(string, 1)
         encoder.analyze_string()
         encoder.build_tree()
         self.assertEqual(
@@ -54,7 +54,7 @@ class TestHuffmanEncoder(TestCase):
 
     def test_build_codes(self):
         string = 'ABRAKADABRA'
-        encoder = HuffmanEncoder(string, 1, None)
+        encoder = HuffmanEncoder(string, 1)
         encoder.analyze_string()
         encoder.build_tree()
         encoder.build_codes()
@@ -68,7 +68,7 @@ class TestHuffmanEncoder(TestCase):
 
     def test_encode_array(self):
         string = 'ABRAKADABRA'
-        encoder = HuffmanEncoder(string, 1, None)
+        encoder = HuffmanEncoder(string, 1)
         encoder.analyze_string()
         encoder.build_tree()
         encoder.build_codes()
@@ -87,7 +87,7 @@ class TestHuffmanEncoder(TestCase):
 
     def test_encode_string(self):
         string = 'ABRAKADABRA'
-        encoder = HuffmanEncoder(string, 1, None)
+        encoder = HuffmanEncoder(string, 1)
         encoder.analyze_string()
         encoder.build_tree()
         encoder.build_codes()
@@ -98,7 +98,7 @@ class TestHuffmanEncoder(TestCase):
 class TestHuffmanDecoder(TestCase):
     def test_read_until(self):
         string = '111111001010100'
-        decoder = HuffmanDecoder(string, None)
+        decoder = HuffmanDecoder(string)
         result, i = decoder.read_until(0)
         self.assertEqual(result, '111111')
         self.assertEqual(i, 6)
@@ -111,7 +111,7 @@ class TestHuffmanDecoder(TestCase):
 
     def test_read_next(self):
         string = '111111001010100'
-        decoder = HuffmanDecoder(string, None)
+        decoder = HuffmanDecoder(string)
         result = decoder.read_next(3)
         self.assertEqual(result, '111')
         result = decoder.read_next(3, delete=True)
@@ -121,7 +121,6 @@ class TestHuffmanDecoder(TestCase):
     def test_decode_array(self):
         decoder = HuffmanDecoder(
             '101000010111100001000001100010010111010100010011001010010111010000100111110010001010111110000000',
-            None,
         )
         decoder.decode_array()
         self.assertEqual(
@@ -138,7 +137,6 @@ class TestHuffmanDecoder(TestCase):
     def test_decode_tree(self):
         decoder = HuffmanDecoder(
             '101000010111100001000001100010010111010100010011001010010111010000100111110010001010111110000000',
-            None,
         )
         decoder.decode_array()
         decoder.decode_tree()
@@ -180,7 +178,6 @@ class TestHuffmanDecoder(TestCase):
     def test_optimize_tree(self):
         decoder = HuffmanDecoder(
             '101000010111100001000001100010010111010100010011001010010111010000100111110010001010111110000000',
-            None,
         )
         decoder.decode_array()
         decoder.decode_tree()
@@ -213,7 +210,6 @@ class TestHuffmanDecoder(TestCase):
     def test_decode_data(self):
         decoder = HuffmanDecoder(
             '101000010111100001000001100010010111010100010011001010010111010000100111110010001010111110000000',
-            None,
         )
         decoder.decode_array()
         decoder.decode_tree()
