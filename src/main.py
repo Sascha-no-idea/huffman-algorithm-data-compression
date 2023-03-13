@@ -41,7 +41,6 @@ class HuffmanEncoder:
         self.log = log
         self.heap = []
         self.codes = {}
-        self.reverse_mapping = {}
 
     def analyze_string(self):
         """
@@ -58,7 +57,7 @@ class HuffmanEncoder:
         self.log.debug('String is not empty.')
         self.log.debug('Checking if string only contains ASCII characters...')
         try:
-            self.string_array = np.fromstring(self.string, dtype='S1').astype('U1')
+            np.fromstring(self.string, dtype='S1').astype('U1')
         except UnicodeDecodeError:
             self.log.error('Non-ASCII characters found in string.')
             self.log.debug('Checking which character is non-ASCII...')
@@ -349,15 +348,3 @@ class HuffmanDecoder:
         self.decode_data()
         self.log.info('Decoding finished.')
         return self.decoded_string
-
-
-# for debugging
-if __name__ == '__main__':
-    encoder = HuffmanEncoder('ABRAKADABRA–', 1, None)
-    encoder.encode()
-
-    decoder = HuffmanDecoder(
-        '101000010111100001000001100010010111010100010011001010010111010000100111110010001010111110000000',
-        None,
-    )
-    decoder.decode()
