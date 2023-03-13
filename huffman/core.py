@@ -109,9 +109,6 @@ class HuffmanEncoder:
         # the order changes
 
         def traverse_tree(node, current_code=''):
-            if node is None:  # is this necessary?
-                return
-
             if node.char is not None:  # leaf node
                 self.codes[node.char] = current_code
                 return
