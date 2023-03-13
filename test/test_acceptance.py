@@ -14,7 +14,7 @@ import os
 import subprocess
 import difflib
 
-
+# main test function for funtionality
 def run_test(file):
     # check if file exists
     if not os.path.isfile('test/' + file):
@@ -23,14 +23,14 @@ def run_test(file):
     with open('test/' + file, 'r') as f:
         original = f.read()
     # encode
-    subprocess.call(['python3', 'src/main_cli.py', '-i', 'test/' + file])
+    subprocess.call(['python3', 'huffman', 'test/' + file, '-o'])
     # check if file exists
-    if not os.path.isfile('test/' + file.replace('.txt', '.bin')):
-        raise FileNotFoundError(f'Encoded file {file.replace(".txt", ".bin")} not found!')
+    if not os.path.isfile('test/' + file.replace('.txt', '.huff')):
+        raise FileNotFoundError(f'Encoded file {file.replace(".txt", ".huff")} not found!')
     # delete
     os.remove('test/' + file)
     # decode
-    subprocess.call(['python3', 'src/main_cli.py', '-i', 'test/' + file.replace('.txt', '.bin')])
+    subprocess.call(['python3', 'huffman', 'test/' + file.replace('.txt', '.huff'), '-o'])
     # check if file exists
     if not os.path.isfile('test/' + file):
         raise FileNotFoundError(f'Decoded file {file} not found!')
@@ -38,7 +38,7 @@ def run_test(file):
     with open('test/' + file, 'r') as f:
         decoded = f.read()
     # delete
-    os.remove('test/' + file.replace('.txt', '.bin'))
+    os.remove('test/' + file.replace('.txt', '.huff'))
     # compare
     if original != decoded:
         # print diff

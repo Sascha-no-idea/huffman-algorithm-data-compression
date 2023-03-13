@@ -8,14 +8,26 @@ pip install -r requirements.txt
 ## Usage
 ### Compress
 ```bash
-python main.py -i <input_file_name>.txt
+python huffman <input_file_name>.txt  # output to stdout
+python huffman <input_file_name>.txt -o  # output to default file name
+python huffman <input_file_name>.txt -o <output_file_name>.huff
+cat <input_file_name>.txt | python huffman
+cat <input_file_name>.txt | python huffman -o
+cat <input_file_name>.txt | python huffman -o <output_file_name>.huff
+echo <input_string> | python huffman
+echo <input_string> | python huffman -o
+echo <input_string> | python huffman -o <output_file_name>.huff
 ```
 ### Decompress
 ```bash
-python main.py -i <input_file_name>.bin
+python huffman <input_file_name>.huff
+python huffman <input_file_name>.huff -o
+python huffman <input_file_name>.huff -o <output_file_name>.txt
+python huffman <input_file_name>.huff > <output_file_name>.txt
 ```
 ### Options
-- `-o, --overwrite` Overwrite the output file if it already exists
+- `-o, --output-file` Specify the output file name
+- `-f, --force` Overwrite existing output file
 - `-l, --level` Set the compression level (default: 1)
     - 1: Huffman Coding with single character encoding (default)
     - 2: Huffman Coding with multi character encoding (not implemented yet)
