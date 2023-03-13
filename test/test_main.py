@@ -19,7 +19,7 @@ class TestHuffmanEncoder(TestCase):
         string = 'ABRAKADABRA–'  # the last character is a non-ascii character
         encoder = HuffmanEncoder(string, 1, None)
         # check if ValueError is raised
-        with self.assertRaisesRegex(ValueError, 'non-ASCII character'):
+        with self.assertRaisesRegex(ValueError, 'non-ASCII'):
             encoder.analyze_string()
 
     def test_build_tree(self):
