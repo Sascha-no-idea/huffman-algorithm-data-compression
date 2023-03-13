@@ -88,7 +88,6 @@ class Interface:
             self.log.error('Input file not found: %s', self.args['input_file'])
             raise FileNotFoundError('Input file not found')
         # check if output file already exists
-        self.args['output_file'] = self.args['input_file'].replace('.txt', '.bin')
         if os.path.exists(self.args['output_file']) and not self.args['overwrite']:
             self.log.error('Output file already exists: %s', self.args['output_file'])
             raise FileExistsError(
@@ -158,8 +157,8 @@ class Interface:
         # initialize
         self.parse_args()
         self.initialize_logger()
-        self.check_input()
         self.check_mode()
+        self.check_input()
         # run the appropriate mode
         if self.args['mode'] == 'compression':
             self.compress()
