@@ -71,16 +71,35 @@ class Interface:
             self.log.setLevel(logging.INFO)
         else:
             self.log.setLevel(logging.WARNING)
-        # set formatter and file handler
+        # set file handler
         log_formatter = logging.Formatter(
             '%(asctime)s - %(levelname)s - %(message)s'
         )
         file_handler = logging.FileHandler('log.txt', mode='w')
         file_handler.setFormatter(log_formatter)
         self.log.addHandler(file_handler)
+        # set stream handler
+        stream_log_formatter = logging.Formatter('%(message)s')
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(stream_log_formatter)
+        self.log.addHandler(stream_handler)
         # test logger
         self.log.info('Logger initialized')
+        self.log.debug('Debug mode enabled')
         return
+
+    def check_mode(self):
+        if self.args['input_file'].endswith('.txt'):
+            self.args['mode'] = 'compression'
+            self.args['output_file'] = self.args['input_file'].replace('.txt', '.bin')
+            self.log.info('compression mode selected')
+        elif self.args['input_file'].endswith('.bin'):
+            self.args['mode'] = 'decompression'
+            self.args['output_file'] = self.args['input_file'].replace('.bin', '.txt')
+            self.log.info('decompression mode selected')
+        else:
+            self.log.error('Invalid file extension: %s', self.args['input_file'])
+            raise ValueError('Invalid file extension')
 
     def check_input(self):
         # check if the input file exists
@@ -100,17 +119,6 @@ class Interface:
             self.log.error('Invalid compression level: %s', self.args['level'])
             raise ValueError('Invalid compression level')
 
-    def check_mode(self):
-        if self.args['input_file'].endswith('.txt'):
-            self.args['mode'] = 'compression'
-            self.args['output_file'] = self.args['input_file'].replace('.txt', '.bin')
-        elif self.args['input_file'].endswith('.bin'):
-            self.args['mode'] = 'decompression'
-            self.args['output_file'] = self.args['input_file'].replace('.bin', '.txt')
-        else:
-            self.log.error('Invalid file extension: %s', self.args['input_file'])
-            raise ValueError('Invalid file extension')
-
     def bits_to_bytes(self, bits, size=8, pad='0'):
         """
         This function converts a binary string into a byte array.
@@ -126,32 +134,49 @@ class Interface:
 
     def compress(self):
         # read the input file
+        self.log.info('Reading input file: %s', self.args['input_file'])
         with open(self.args['input_file'], 'r') as f:
             string = f.read()
+        self.log.debug('Input string: %s', string)
         # compress the string
+        self.log.info('Starting HuffmanEncoder')
         encoder = HuffmanEncoder(string, self.args['level'], self.log)
         encoded_string = encoder.encode()
+        self.log.info('Compression successful')
+        self.log.debug('Encoded string: %s', encoded_string)
+        self.log.debug('Encoded string length: %s', len(encoded_string))
+        self.log.debug('Converting bit sequence to byte array')
         byte_array = self.bits_to_bytes(encoded_string)
+        self.log.debug('Byte array: %s', byte_array)
         # write the encoded string to the output file
+        self.log.info('Writing output file: %s', self.args['output_file'])
         with open(self.args['output_file'], 'wb') as f:
             f.write(byte_array)
 
     def decompress(self):
         # read the input file
+        self.log.info('Reading input file: %s', self.args['input_file'])
         with open(self.args['input_file'], 'rb') as f:
             encoded_bytes = f.read()
+        self.log.debug('Encoded byte array: %s', encoded_bytes)
         # decompress the string
+        self.log.debug('Converting byte array to bit sequence')
         encoded_string = self.bytes_to_bits(encoded_bytes)
+        self.log.debug('Encoded string: %s', encoded_string)
+        self.log.debug('Encoded string length: %s', len(encoded_string))
+        self.log.info('Starting HuffmanDecoder')
         string = HuffmanDecoder(encoded_string, self.log).decode()
         # write the decoded string to the output file
+        self.log.info('Writing output file: %s', self.args['output_file'])
         with open(self.args['output_file'], 'w') as f:
             f.write(string)
 
     def compression_ratio(self):
+        self.log.debug('Calculating compression ratio')
         uncompressed_size = os.path.getsize(self.args['input_file'])
         compressed_size = os.path.getsize(self.args['output_file'])
-        compression_ratio = uncompressed_size / compressed_size * 100
-        self.log.info('Compression ratio: %s %', compression_ratio)
+        compression_ratio = compressed_size / uncompressed_size * 100
+        self.log.info(f'Compression ratio: {compression_ratio:.2f} %')
 
     def run(self):
         # initialize

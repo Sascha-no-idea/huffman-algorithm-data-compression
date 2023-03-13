@@ -63,30 +63,41 @@ class HuffmanEncoder:
         priority queue (heap) that is used to construct
         the Huffman tree.
         """
-        # check if the string is empty
+        self.log.info('Analyzing string...')
+        self.log.debug(f'Input string: {self.string}')
+        self.log.debug('Checking if string is empty...')
         if not self.string:
+            self.log.error('The string is empty.')
             raise ValueError('The string is empty.')
-        # check if string contains only ASCII characters
+        self.log.debug('String is not empty.')
+        self.log.debug('Checking if string only contains ASCII characters...')
         try:
             self.string_array = np.fromstring(self.string, dtype='S1').astype('U1')
         except UnicodeDecodeError:
-            # check precisely which characters are not ASCII
+            self.log.error('Non-ASCII characters found in string.')
+            self.log.debug('Checking which character is non-ASCII...')
             for i, char in enumerate(self.string):
                 # check if the character can be encoded using 8 bits
                 if not len(char) == len(char.encode()):
+                    self.log.debug(f'Character {i+1} in string is non-ASCII: "{char}".')
                     raise ValueError(
                         f'Character {i+1} in string is non-ASCII: "{char}".'
                     )
+        self.log.debug('String only contains ASCII characters.')
+        self.log.debug('Counting characters...')
         d = collections.Counter(self.string)  # count the characters --> dict
         # use heapq to create a priority queue
+        self.log.debug('Creating Huffman nodes and priority queue...')
         for key, value in d.items():
             node = HuffmanNode(key, value)
             heapq.heappush(self.heap, node)
+        self.log.debug('Priority queue created.')
 
     def build_tree(self):
         """
         This function builds the Huffman tree using the priority queue.
         """
+        self.log.info('Building Huffman tree...')
         while len(self.heap) > 1:
             left = heapq.heappop(self.heap)
             right = heapq.heappop(self.heap)
@@ -98,12 +109,14 @@ class HuffmanEncoder:
 
         # return the root node, which is the only node left in the heap
         self.tree = self.heap[0]
+        self.log.debug('Huffman tree built.')
 
     def build_codes(self):
         """
         This function builds the codes for each character
         in the string.
         """
+        self.log.info('Building codes...')
         self.codes = {}  # TODO: improve performance
         # TODO: since dict is not ordered, a bug might occur
         # when the identifier is supposed to be determined
@@ -121,13 +134,16 @@ class HuffmanEncoder:
             traverse_tree(node.left, current_code + '0')
             traverse_tree(node.right, current_code + '1')
 
+        self.log.debug('Traversing Huffman tree...')
         traverse_tree(self.tree)
+        self.log.debug('Codes built: %s', self.codes)
 
     def encode_array(self):
         """
         This function encodes the array that is used for translating
         the ASCII characters into the binary string.
         """
+        self.log.info('Encoding array...')
         # define helper functions
         def pad_zeros(code: str, max_length: int):
             # invert string twice to pad zeros on the right
@@ -142,12 +158,17 @@ class HuffmanEncoder:
         chars = np.array(list(self.codes.keys()), dtype=object)
         # use vectorized helper functions
         bin_chars = np.vectorize(char_to_binary, otypes=[object])(chars)
+        self.log.debug('Binary characters: %s', bin_chars)
         max_length = np.max(np.vectorize(len)(codes))
+        self.log.debug('Number of codes: %s', len(codes))
         codes = np.vectorize(pad_zeros)(codes, max_length)
+        self.log.debug('Padded codes: %s', codes)
         # concatenate the codes and the chars
         pairs = codes + bin_chars
         identifier = '1' * max_length
+        self.log.debug('Identifier: %s', identifier)
         number = bin(len(self.codes))[2:].zfill(7)
+        self.log.debug('Number of codes: 0b%s', number)
         # The first 3 bits are reserved for the length of the right
         # padding, that is added to round the length of the encoded
         # bits to a multiple of 8.
@@ -157,6 +178,7 @@ class HuffmanEncoder:
         # Since the order of codes is preserved, the first code will be
         # '0', thus determining the end of the identifier.
         self.encoded_array = number + identifier + np.sum(pairs, axis=0)
+        self.log.debug('Array encoding finished: %s', self.encoded_array)
         # TODO: automatically switch to dense array if its
         # size is smaller than the sparse array
 
@@ -165,13 +187,17 @@ class HuffmanEncoder:
         This function encodes the string using the Huffman
         tree.
         """
+        self.log.info('Encoding string...')
         self.encoded_string = ''
         for char in self.string:
             self.encoded_string += self.codes[char]
+        self.log.debug('String encoding finished: %s', self.encoded_string)
 
     def finalize_encoding(self):
+        self.log.info('Finalizing encoding...')
         self.finalized_string = self.encoded_array + self.encoded_string
         length = bin(8 - ((len(self.finalized_string) + 3) % 8))[2:].zfill(3)
+        self.log.debug('Setting number of padding bits: 0b%s', length)
         self.finalized_string = length + self.finalized_string
 
     def encode(self):
@@ -179,12 +205,14 @@ class HuffmanEncoder:
         This function analyzes the string, builds the tree,
         builds the codes, and encodes the string.
         """
+        self.log.info('Encoding string...')
         self.analyze_string()
         self.build_tree()
         self.build_codes()
         self.encode_array()
         self.encode_string()
         self.finalize_encoding()
+        self.log.info('Encoding finished.')
         return self.finalized_string
 
 
@@ -231,27 +259,33 @@ class HuffmanDecoder:
         return result
 
     def decode_array(self):
+        self.log.info('Decoding array...')
         # read the length of the right padding and delete it
         right_padding = int(self.read_next(3, delete=True), 2)
         self.encoded_string = self.encoded_string[:-right_padding]
+        self.log.debug('Number of padding bits: %s', right_padding)
         # read the number of codes
         number_of_codes = int(self.read_next(7, delete=True), 2)
+        self.log.debug('Number of codes: %s', number_of_codes)
         # read until the first 0 is encountered
         _, depth = self.read_until(0, delete=True)
         # read the codes and the characters
         self.codes = {}
+        self.log.debug('Start reading codes...')
         for _ in range(number_of_codes):
             code = self.read_next(depth, delete=True)
             char = self.read_next(8, delete=True)
             char = int(char, 2).to_bytes(1, 'big').decode('utf-8')
             self.codes[code] = char
             # TODO: improve performance by using numpy arrays
+        self.log.debug('Reading codes finished: %s', self.codes)
 
     def decode_tree(self):
         """
         This function decodes the Huffman tree from the
         encoded string.
         """
+        self.log.info('Decoding tree...')
         self.tree = HuffmanNode()
         for code, leaf in self.codes.items():
             current_node = self.tree
@@ -265,6 +299,7 @@ class HuffmanDecoder:
                         current_node.right = HuffmanNode()
                     current_node = current_node.right
             current_node.char = leaf
+        self.log.debug('Tree decoding finished.')
 
     def optimize_tree(self):
         """
@@ -272,6 +307,7 @@ class HuffmanDecoder:
         due to the encoding of the tree, the tree can be optimized
         in order to shorten paths that have no further branches.
         """
+        self.log.info('Optimizing tree...')
         def traverse_tree(node, current_code=''):
             # traverse to the deepest node
             if node.left is None and node.right is None:
@@ -292,13 +328,16 @@ class HuffmanDecoder:
                 # traverse the right subtree
                 traverse_tree(node.right, current_code + '1')
 
+        self.log.debug('Removing unecessary branches.')
         traverse_tree(self.tree)
+        self.log.debug('Tree optimization finished.')
 
     def decode_data(self):
         """
         This function decodes the encoded data from the
         encoded string.
         """
+        self.log.info('Decoding data...')
         self.decoded_string = ''
         self.current = self.tree
         for char in self.encoded_string:
@@ -311,15 +350,18 @@ class HuffmanDecoder:
             if self.current.char is not None:
                 self.decoded_string += self.current.char
                 self.current = self.tree
+        self.log.debug('String successfully decoded: %s', self.decoded_string)
 
     def decode(self):
         """
         This function decodes the encoded string.
         """
+        self.log.info('Decoding string...')
         self.decode_array()
         self.decode_tree()
         self.optimize_tree()
         self.decode_data()
+        self.log.info('Decoding finished.')
         return self.decoded_string
 
 
