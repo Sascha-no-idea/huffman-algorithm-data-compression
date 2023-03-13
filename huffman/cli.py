@@ -1,9 +1,10 @@
 import argparse
 import logging
 import os
+import sys
 from bitstring import BitArray
 
-from main import HuffmanEncoder, HuffmanDecoder
+from core import HuffmanEncoder, HuffmanDecoder
 
 
 class Interface:
@@ -23,23 +24,29 @@ class Interface:
             description='Compress and decompress files using the Huffman algorithm'
         )
         parser.add_argument(
-            '-i',
-            '--input_file',
+            'input_file',
+            nargs='?',
             type=str,
             help='path the input file',
-            required=True
         )
         parser.add_argument(
             '-o',
-            '--overwrite',
-            help='overwrite output file if it already exists',
+            '--output_file',
+            type=str,
+            help='path to the output file',
+            required=False
+        )
+        parser.add_argument(
+            '-f',
+            '--force',
+            help='force overwrite output file if it already exists',
             action='store_true'
         )
         parser.add_argument(
             '-l',
             '--level',
             type=int,
-            help='compression level',
+            help='compression level (1-2)',
             required=False,
             default=1
         )
@@ -89,30 +96,47 @@ class Interface:
         return
 
     def check_mode(self):
-        if self.args['input_file'].endswith('.txt'):
-            self.args['mode'] = 'compression'
-            self.args['output_file'] = self.args['input_file'].replace('.txt', '.bin')
-            self.log.info('compression mode selected')
-        elif self.args['input_file'].endswith('.bin'):
-            self.args['mode'] = 'decompression'
-            self.args['output_file'] = self.args['input_file'].replace('.bin', '.txt')
-            self.log.info('decompression mode selected')
+        if self.args['input_file'] is not None:
+            if os.path.exists(self.args['input_file']):
+                if self.args['input_file'].endswith('.txt'):
+                    self.args['mode'] = 'compression'
+                    self.log.info('compression mode selected')
+                elif self.args['input_file'].endswith('.huff'):
+                    self.args['mode'] = 'decompression'
+                    self.log.info('decompression mode selected')
+            else:
+                self.log.error('Input file not found: %s', self.args['input_file'])
+                raise FileNotFoundError('Input file not found')
         else:
-            self.log.error('Invalid file extension: %s', self.args['input_file'])
-            raise ValueError('Invalid file extension')
+            self.args['input_file'] = None
+            self.args['input_string'] = sys.stdin.read()
+            if self.args['input_string'].isascii():
+                self.args['mode'] = 'compression'
+                self.log.info('compression mode selected')
+            else:
+                self.args['mode'] = 'decompression'
+                self.log.info('decompression mode selected')
 
-    def check_input(self):
-        # check if the input file exists
-        if not os.path.exists(self.args['input_file']):
-            self.log.error('Input file not found: %s', self.args['input_file'])
-            raise FileNotFoundError('Input file not found')
-        # check if output file already exists
-        if os.path.exists(self.args['output_file']) and not self.args['overwrite']:
-            self.log.error('Output file already exists: %s', self.args['output_file'])
-            raise FileExistsError(
-                'Output file already exists. Please delete it first or set the --overwrite flag.'
-            )
-        # check if the compression level is valid
+    def check_output_path(self):
+        if self.args['output_file'] is None:
+            if self.args['input_file'] is not None:
+                if self.args['mode'] == 'compression':
+                    self.args['output_file'] = self.args['input_file'].replace('.txt', '.huff')
+                elif self.args['mode'] == 'decompression':
+                    self.args['output_file'] = self.args['input_file'].replace('.huff', '.txt')
+            else:
+                if self.args['mode'] == 'compression':
+                    self.args['output_file'] = 'output.huff'
+                elif self.args['mode'] == 'decompression':
+                    self.args['output_file'] = 'output.txt'
+
+    def check_output_file(self):
+        if os.path.exists(self.args['output_file']):
+            if not self.args['force']:
+                self.log.error('Output file already exists and --force flag not set')
+                raise FileExistsError('Output file already exists and --force flag not set')
+
+    def check_level(self):
         if self.args['level'] in [1, 2]:
             self.log.info('Compression level set to %s', self.args['level'])
         else:
@@ -134,13 +158,14 @@ class Interface:
 
     def compress(self):
         # read the input file
-        self.log.info('Reading input file: %s', self.args['input_file'])
-        with open(self.args['input_file'], 'r') as f:
-            string = f.read()
-        self.log.debug('Input string: %s', string)
+        if self.args['input_file'] is not None:
+            self.log.info('Reading input file: %s', self.args['input_file'])
+            with open(self.args['input_file'], 'r') as f:
+                self.args['input_string'] = f.read()
+        self.log.debug('Input string: %s', self.args['input_string'])
         # compress the string
         self.log.info('Starting HuffmanEncoder')
-        encoder = HuffmanEncoder(string, self.args['level'], self.log)
+        encoder = HuffmanEncoder(self.args['input_string'], self.args['level'], self.log)
         encoded_string = encoder.encode()
         self.log.info('Compression successful')
         self.log.debug('Encoded string: %s', encoded_string)
@@ -155,13 +180,14 @@ class Interface:
 
     def decompress(self):
         # read the input file
-        self.log.info('Reading input file: %s', self.args['input_file'])
-        with open(self.args['input_file'], 'rb') as f:
-            encoded_bytes = f.read()
-        self.log.debug('Encoded byte array: %s', encoded_bytes)
+        if self.args['input_file'] is not None:
+            self.log.info('Reading input file: %s', self.args['input_file'])
+            with open(self.args['input_file'], 'rb') as f:
+                self.args['input_string'] = f.read()
+        self.log.debug('Encoded byte array: %s', self.args['input_string'])
         # decompress the string
         self.log.debug('Converting byte array to bit sequence')
-        encoded_string = self.bytes_to_bits(encoded_bytes)
+        encoded_string = self.bytes_to_bits(self.args['input_string'])
         self.log.debug('Encoded string: %s', encoded_string)
         self.log.debug('Encoded string length: %s', len(encoded_string))
         self.log.info('Starting HuffmanDecoder')
@@ -173,7 +199,10 @@ class Interface:
 
     def compression_ratio(self):
         self.log.debug('Calculating compression ratio')
-        uncompressed_size = os.path.getsize(self.args['input_file'])
+        if self.args['input_file'] is not None:
+            uncompressed_size = os.path.getsize(self.args['input_file'])
+        else:
+            uncompressed_size = len(self.args['input_string'])
         compressed_size = os.path.getsize(self.args['output_file'])
         compression_ratio = compressed_size / uncompressed_size * 100
         self.log.info(f'Compression ratio: {compression_ratio:.2f} %')
@@ -183,7 +212,8 @@ class Interface:
         self.parse_args()
         self.initialize_logger()
         self.check_mode()
-        self.check_input()
+        self.check_output_path()
+        self.check_output_file()
         # run the appropriate mode
         if self.args['mode'] == 'compression':
             self.compress()
@@ -192,5 +222,9 @@ class Interface:
             self.decompress()
 
 
-if __name__ == '__main__':
+def main():
     Interface().run()
+
+
+if __name__ == '__main__':
+    main()
