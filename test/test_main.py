@@ -15,6 +15,13 @@ class TestHuffmanEncoder(TestCase):
         self.assertEqual(heapq.heappop(encoder.heap), HuffmanNode('B', 2))
         self.assertEqual(heapq.heappop(encoder.heap), HuffmanNode('A', 5))
 
+    def test_analyze_string_non_ascii(self):
+        string = 'ABRAKADABRA–'  # the last character is a non-ascii character
+        encoder = HuffmanEncoder(string, 1, None)
+        # check if ValueError is raised
+        with self.assertRaisesRegex(ValueError, 'non-ASCII character'):
+            encoder.analyze_string()
+
     def test_build_tree(self):
         string = 'ABRAKADABRA'
         encoder = HuffmanEncoder(string, 1, None)
