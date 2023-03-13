@@ -13,6 +13,7 @@
 import heapq
 import numpy as np
 import collections
+import logging
 
 
 class HuffmanNode:
@@ -49,7 +50,7 @@ class HuffmanEncoder:
     string using the Huffman tree. The encoded string is
     returned.
     """
-    def __init__(self, string, level, log):
+    def __init__(self, string, level, log=logging.getLogger()):
         self.string = string
         self.level = level
         self.log = log
@@ -224,7 +225,7 @@ class HuffmanDecoder:
     data. The encoded data is then decoded using the Huffman
     tree. The decoded string is returned as a string.
     """
-    def __init__(self, encoded_string, log):
+    def __init__(self, encoded_string, log=logging.getLogger()):
         self.encoded_string = encoded_string
         self.log = log
 
