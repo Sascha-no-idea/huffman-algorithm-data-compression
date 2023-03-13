@@ -1,15 +1,3 @@
-# write a program that compresses ASCII text files using the
-# huffman algorithm and writes the compressed file to disk
-# as a binary file. The program should also be able to decompress
-# the binary file and write the decompressed file to disk as a
-# text file.
-
-# This is implemented in four classes:
-# 1. HuffmanTree
-# 2. HuffmanNode
-# 3. HuffmanEncoder
-# 4. HuffmanDecoder
-
 import heapq
 import numpy as np
 import collections
@@ -31,14 +19,11 @@ class HuffmanNode:
         return self.freq < other.freq
 
     def __eq__(self, other):
-        if other == None:
+        if other is None:
             return False
         if not isinstance(other, HuffmanNode):
             return False
         return self.freq == other.freq
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
 
 
 class HuffmanEncoder:
